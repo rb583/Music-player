@@ -52,8 +52,12 @@ An offline music player Android app built natively in **Kotlin**, using **Androi
 - `FOREGROUND_SERVICE` / `FOREGROUND_SERVICE_MEDIA_PLAYBACK` — to keep music playing in the background
 
 ## 📸 Screenshots
+## 📸 Screenshots
 
-*(Add screenshots of your Library, Player, and Settings screens here)*
+| Library | Player | Settings |
+|---|---|---|
+| ![Library](Screenshots/Library.jpg) | ![Player](Screenshots/Player.jpg) | ![Settings](Screenshots/Settings.jpg) |
+
 
 ## 📄 License
 
