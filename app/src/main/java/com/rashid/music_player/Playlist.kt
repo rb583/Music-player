@@ -1,0 +1,6 @@
+package com.rashid.music_player
+
+data class Playlist(
+    val name: String,
+    val songIds: MutableList<Long> = mutableListOf()
+)

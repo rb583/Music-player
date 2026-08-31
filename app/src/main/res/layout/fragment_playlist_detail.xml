@@ -1,0 +1,42 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/playlist_detail_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Playlist"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:padding="16dp" />
+
+    <Button
+        android:id="@+id/btn_add_songs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="+ Add Songs"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="8dp" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_playlist_songs"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <TextView
+            android:id="@+id/empty_playlist_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="No songs in this playlist"
+            android:visibility="gone" />
+
+    </RelativeLayout>
+
+</LinearLayout>

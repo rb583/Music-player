@@ -1,0 +1,78 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Settings"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp" />
+
+    <TextView
+        android:id="@+id/song_count_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Songs found: 0"
+        android:textSize="16sp"
+        android:layout_marginBottom="24dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Theme"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+
+    <RadioGroup
+        android:id="@+id/theme_radio_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <RadioButton
+            android:id="@+id/radio_light"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Light" />
+
+        <RadioButton
+            android:id="@+id/radio_dark"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Dark" />
+
+        <RadioButton
+            android:id="@+id/radio_system"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Follow System" />
+
+    </RadioGroup>
+
+    <Button
+        android:id="@+id/btn_open_equalizer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Equalizer"
+        android:layout_marginTop="24dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="About"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginTop="24dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Offline Music Player v1.0"
+        android:textSize="14sp"
+        android:layout_marginTop="4dp" />
+
+</LinearLayout>
