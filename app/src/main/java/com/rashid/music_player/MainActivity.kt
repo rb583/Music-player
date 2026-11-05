@@ -57,6 +57,7 @@ class MainActivity : AppCompatActivity() {
         bottomNav.setOnItemSelectedListener { item ->
             val selected: Fragment = when (item.itemId) {
                 R.id.nav_favorites -> FavoritesFragment()
+                R.id.nav_history -> HistoryFragment()
                 R.id.nav_playlists -> PlaylistsFragment()
                 R.id.nav_player -> PlayerFragment()
                 R.id.nav_settings -> SettingsFragment()

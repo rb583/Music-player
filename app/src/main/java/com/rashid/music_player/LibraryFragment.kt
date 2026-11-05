@@ -48,7 +48,13 @@ class LibraryFragment : Fragment() {
         sortSpinner = view.findViewById(R.id.sort_spinner)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        val sortOptions = arrayOf("Title (A-Z)", "Title (Z-A)", "Artist (A-Z)")
+        val sortOptions = arrayOf(
+            "Title (A-Z)",
+            "Title (Z-A)",
+            "Artist (A-Z)",
+            "Date Added (Newest)",
+            "Date Added (Oldest)"
+        )
         sortSpinner.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, sortOptions)
         sortSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
@@ -92,7 +98,8 @@ class LibraryFragment : Fragment() {
             MediaStore.Audio.Media._ID,
             MediaStore.Audio.Media.TITLE,
             MediaStore.Audio.Media.ARTIST,
-            MediaStore.Audio.Media.DATA
+            MediaStore.Audio.Media.DATA,
+            MediaStore.Audio.Media.DATE_ADDED
         )
         val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
 
@@ -101,6 +108,7 @@ class LibraryFragment : Fragment() {
             val titleCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
             val artistCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
             val pathCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
+            val dateAddedCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED)
 
             while (cursor.moveToNext()) {
                 songList.add(
@@ -108,7 +116,8 @@ class LibraryFragment : Fragment() {
                         cursor.getLong(idCol),
                         cursor.getString(titleCol),
                         cursor.getString(artistCol),
-                        cursor.getString(pathCol)
+                        cursor.getString(pathCol),
+                        cursor.getLong(dateAddedCol)
                     )
                 )
             }
@@ -132,6 +141,8 @@ class LibraryFragment : Fragment() {
         filtered = when (currentSort) {
             "Title (Z-A)" -> filtered.sortedByDescending { it.title.lowercase() }
             "Artist (A-Z)" -> filtered.sortedBy { it.artist?.lowercase() ?: "" }
+            "Date Added (Newest)" -> filtered.sortedByDescending { it.dateAdded }
+            "Date Added (Oldest)" -> filtered.sortedBy { it.dateAdded }
             else -> filtered.sortedBy { it.title.lowercase() }
         }
 

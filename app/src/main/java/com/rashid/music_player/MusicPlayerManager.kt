@@ -4,6 +4,9 @@ import android.content.Context
 import android.content.Intent
 import android.media.MediaPlayer
 import androidx.core.content.ContextCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 object MusicPlayerManager {
 
@@ -50,8 +53,30 @@ object MusicPlayerManager {
         EqualizerManager.init(mediaPlayer!!.audioSessionId)
         currentSong = song
         isPlaying = true
+        recordPlay(song, mediaPlayer!!.duration.toLong())
         notifyListeners()
         startServiceIfNeeded()
+    }
+
+    // Inahifadhi kila wimbo unapoanza kuchezwa kwenye Room database
+    private fun recordPlay(song: Song, durationMs: Long) {
+        val ctx = appContext ?: return
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                AppDatabase.getInstance(ctx).playHistoryDao().insert(
+                    PlayHistoryEntity(
+                        songId = song.id,
+                        title = song.title,
+                        artist = song.artist,
+                        path = song.path,
+                        durationMs = durationMs,
+                        playedAt = System.currentTimeMillis()
+                    )
+                )
+            } catch (e: Exception) {
+                // Tusiruhusu tatizo la database lisimamishe muziki
+            }
+        }
     }
 
     private fun startServiceIfNeeded() {

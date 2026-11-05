@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 
 object AlbumArtHelper {
+
     fun getAlbumArt(path: String): Bitmap? {
         return try {
             val retriever = MediaMetadataRetriever()
@@ -15,5 +16,11 @@ object AlbumArtHelper {
         } catch (e: Exception) {
             null
         }
+    }
+
+    // Mbinu rahisi ya blur: tunapunguza picha iwe ndogo sana, kisha ImageView
+    // inaikuza na kuilainisha, hivyo inaonekana imefifia (blurred)
+    fun getBlurred(bitmap: Bitmap): Bitmap {
+        return Bitmap.createScaledBitmap(bitmap, 24, 24, true)
     }
 }

@@ -9,6 +9,10 @@ import android.widget.RadioGroup
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class SettingsFragment : Fragment() {
 
@@ -19,6 +23,23 @@ class SettingsFragment : Fragment() {
 
         val songCountText = view.findViewById<TextView>(R.id.song_count_text)
         songCountText.text = "Songs found: ${MusicPlayerManager.songList.size}"
+
+        val historyStatsText = view.findViewById<TextView>(R.id.history_stats_text)
+        lifecycleScope.launch(Dispatchers.IO) {
+            val dao = AppDatabase.getInstance(requireContext()).playHistoryDao()
+            val totalPlays = dao.getTotalPlays()
+            val totalDurationMs = dao.getTotalDurationMs() ?: 0L
+            val totalMinutes = totalDurationMs / 60000
+            val hours = totalMinutes / 60
+            val minutes = totalMinutes % 60
+            val timeFormatted = if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m"
+
+            withContext(Dispatchers.Main) {
+                if (isAdded) {
+                    historyStatsText.text = "Total plays: $totalPlays | Listening time: $timeFormatted"
+                }
+            }
+        }
 
         val radioGroup = view.findViewById<RadioGroup>(R.id.theme_radio_group)
         val radioLight = view.findViewById<View>(R.id.radio_light).id

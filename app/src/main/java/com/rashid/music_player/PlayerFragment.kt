@@ -16,12 +16,14 @@ import java.util.Locale
 class PlayerFragment : Fragment() {
 
     private lateinit var titleText: TextView
+    private lateinit var artistText: TextView
     private lateinit var seekBar: SeekBar
     private lateinit var playPauseBtn: ImageButton
     private lateinit var timeText: TextView
     private lateinit var shuffleBtn: ImageButton
     private lateinit var repeatBtn: ImageButton
     private lateinit var albumArtView: ImageView
+    private lateinit var bgView: ImageView
     private lateinit var sleepTimerText: TextView
     private lateinit var sleepTimerBtn: ImageButton
     private val handler = Handler(Looper.getMainLooper())
@@ -32,12 +34,14 @@ class PlayerFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_player, container, false)
 
         titleText = view.findViewById(R.id.now_playing_title)
+        artistText = view.findViewById(R.id.now_playing_artist)
         seekBar = view.findViewById(R.id.seek_bar)
         playPauseBtn = view.findViewById(R.id.btn_play_pause)
         timeText = view.findViewById(R.id.time_text)
         shuffleBtn = view.findViewById(R.id.btn_shuffle)
         repeatBtn = view.findViewById(R.id.btn_repeat)
         albumArtView = view.findViewById(R.id.player_album_art)
+        bgView = view.findViewById(R.id.player_bg)
         sleepTimerText = view.findViewById(R.id.sleep_timer_text)
         sleepTimerBtn = view.findViewById(R.id.btn_sleep_timer)
 
@@ -106,6 +110,7 @@ class PlayerFragment : Fragment() {
     private fun updateUI() {
         val song = MusicPlayerManager.currentSong
         titleText.text = song?.title ?: "No song playing"
+        artistText.text = song?.artist ?: ""
 
         playPauseBtn.setImageResource(
             if (MusicPlayerManager.isPlaying) android.R.drawable.ic_media_pause
@@ -117,20 +122,15 @@ class PlayerFragment : Fragment() {
         }
 
         shuffleBtn.alpha = if (MusicPlayerManager.isShuffle) 1.0f else 0.4f
-
         repeatBtn.alpha = if (MusicPlayerManager.repeatMode == MusicPlayerManager.REPEAT_OFF) 0.4f else 1.0f
-        repeatBtn.setImageResource(
-            if (MusicPlayerManager.repeatMode == MusicPlayerManager.REPEAT_ONE)
-                android.R.drawable.ic_menu_revert
-            else android.R.drawable.ic_menu_revert
-        )
 
-        if (song != null) {
-            val art = AlbumArtHelper.getAlbumArt(song.path)
-            if (art != null) albumArtView.setImageBitmap(art)
-            else albumArtView.setImageResource(android.R.drawable.ic_menu_agenda)
+        val art = song?.let { AlbumArtHelper.getAlbumArt(it.path) }
+        if (art != null) {
+            albumArtView.setImageBitmap(art)
+            bgView.setImageBitmap(AlbumArtHelper.getBlurred(art))
         } else {
             albumArtView.setImageResource(android.R.drawable.ic_menu_agenda)
+            bgView.setImageDrawable(null)
         }
 
         if (MusicPlayerManager.sleepTimerActive) {
