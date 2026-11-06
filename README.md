@@ -67,7 +67,7 @@ An offline music player Android app built natively in **Kotlin**, using **Androi
 
 | Library | History & Stats | Player | Favorites |
 |---|---|---|---|
-| ![Library](Screenshots/Library.jpg) | ![History & Stats](Screenshots/Listening%20History%20%26%20Stats.jpg) | ![Player](Screenshots/Player.jpg) | ![Favorites](Screenshots/Favorites.jpg) |
+| ![Library](Screenshots/Library.jpg) | ![History & Stats](Screenshots/History.jpg) | ![Player](Screenshots/Player.jpg) | ![Favorites](Screenshots/Favorites.jpg) |
 
 | Playlists | Equalizer | Settings |
 |---|---|---|
