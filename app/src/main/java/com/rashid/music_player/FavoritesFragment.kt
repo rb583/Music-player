@@ -11,11 +11,17 @@ import androidx.recyclerview.widget.RecyclerView
 
 class FavoritesFragment : Fragment() {
 
+    private lateinit var recyclerView: RecyclerView
+
+    private val playerListener: () -> Unit = {
+        recyclerView.adapter?.notifyDataSetChanged()
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         val view = inflater.inflate(R.layout.fragment_favorites, container, false)
-        val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_favorites)
+        recyclerView = view.findViewById(R.id.recycler_favorites)
         val emptyText = view.findViewById<TextView>(R.id.empty_favorites_text)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
@@ -34,6 +40,13 @@ class FavoritesFragment : Fragment() {
                     .selectedItemId = R.id.nav_player
             }
         }
+
+        MusicPlayerManager.addListener(playerListener)
         return view
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        MusicPlayerManager.removeListener(playerListener)
     }
 }

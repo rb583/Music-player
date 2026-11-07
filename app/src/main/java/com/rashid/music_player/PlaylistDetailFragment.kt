@@ -17,6 +17,10 @@ class PlaylistDetailFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var emptyText: TextView
 
+    private val playerListener: () -> Unit = {
+        recyclerView.adapter?.notifyDataSetChanged()
+    }
+
     companion object {
         private const val ARG_NAME = "playlist_name"
         fun newInstance(name: String): PlaylistDetailFragment {
@@ -44,6 +48,7 @@ class PlaylistDetailFragment : Fragment() {
         }
 
         refreshList()
+        MusicPlayerManager.addListener(playerListener)
         return view
     }
 
@@ -88,5 +93,10 @@ class PlaylistDetailFragment : Fragment() {
             }
             .setPositiveButton("Done") { _, _ -> refreshList() }
             .show()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        MusicPlayerManager.removeListener(playerListener)
     }
 }

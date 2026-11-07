@@ -21,6 +21,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var miniPlayPause: ImageButton
     private lateinit var miniAlbumArt: ImageView
 
+    private var isNavigatingFromBackStack = false
     private val playerListener: () -> Unit = { updateMiniPlayer() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,23 +50,60 @@ class MainActivity : AppCompatActivity() {
 
         MusicPlayerManager.addListener(playerListener)
 
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, LibraryFragment())
-            .commit()
-
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_nav)
-        bottomNav.setOnItemSelectedListener { item ->
-            val selected: Fragment = when (item.itemId) {
-                R.id.nav_favorites -> FavoritesFragment()
-                R.id.nav_history -> HistoryFragment()
-                R.id.nav_playlists -> PlaylistsFragment()
-                R.id.nav_player -> PlayerFragment()
-                R.id.nav_settings -> SettingsFragment()
-                else -> LibraryFragment()
-            }
+
+        if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, selected)
+                .replace(R.id.fragment_container, LibraryFragment())
                 .commit()
+        }
+
+        supportFragmentManager.addOnBackStackChangedListener {
+            val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+            val targetItemId = when (currentFragment) {
+                is LibraryFragment -> R.id.nav_library
+                is FavoritesFragment -> R.id.nav_favorites
+                is HistoryFragment -> R.id.nav_history
+                is PlayerFragment -> R.id.nav_player
+                is PlaylistsFragment, is PlaylistDetailFragment -> R.id.nav_playlists
+                is SettingsFragment, is EqualizerFragment -> R.id.nav_settings
+                else -> null
+            }
+            if (targetItemId != null && bottomNav.selectedItemId != targetItemId) {
+                isNavigatingFromBackStack = true
+                bottomNav.selectedItemId = targetItemId
+                isNavigatingFromBackStack = false
+            }
+        }
+
+        bottomNav.setOnItemSelectedListener { item ->
+            if (isNavigatingFromBackStack) return@setOnItemSelectedListener true
+
+            val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+            val isSameTab = when (item.itemId) {
+                R.id.nav_library -> currentFragment is LibraryFragment
+                R.id.nav_favorites -> currentFragment is FavoritesFragment
+                R.id.nav_history -> currentFragment is HistoryFragment
+                R.id.nav_player -> currentFragment is PlayerFragment
+                R.id.nav_playlists -> currentFragment is PlaylistsFragment
+                R.id.nav_settings -> currentFragment is SettingsFragment
+                else -> false
+            }
+
+            if (!isSameTab) {
+                val selected: Fragment = when (item.itemId) {
+                    R.id.nav_favorites -> FavoritesFragment()
+                    R.id.nav_history -> HistoryFragment()
+                    R.id.nav_playlists -> PlaylistsFragment()
+                    R.id.nav_player -> PlayerFragment()
+                    R.id.nav_settings -> SettingsFragment()
+                    else -> LibraryFragment()
+                }
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, selected)
+                    .addToBackStack(null)
+                    .commit()
+            }
             true
         }
     }

@@ -1,6 +1,7 @@
 package com.rashid.music_player
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -32,6 +33,10 @@ class LibraryFragment : Fragment() {
 
     private var allSongs: List<Song> = emptyList()
 
+    private val playerListener: () -> Unit = {
+        recyclerView.adapter?.notifyDataSetChanged()
+    }
+
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
             if (granted) loadSongs()
@@ -48,6 +53,10 @@ class LibraryFragment : Fragment() {
         sortSpinner = view.findViewById(R.id.sort_spinner)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
+        // Load saved sort preference
+        val prefs = requireContext().getSharedPreferences("library_prefs", Context.MODE_PRIVATE)
+        currentSort = prefs.getString("saved_sort_mode", "Title (A-Z)") ?: "Title (A-Z)"
+
         val sortOptions = arrayOf(
             "Title (A-Z)",
             "Title (Z-A)",
@@ -56,9 +65,14 @@ class LibraryFragment : Fragment() {
             "Date Added (Oldest)"
         )
         sortSpinner.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, sortOptions)
+
+        val initialPosition = sortOptions.indexOf(currentSort).coerceAtLeast(0)
+        sortSpinner.setSelection(initialPosition)
+
         sortSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 currentSort = sortOptions[position]
+                prefs.edit().putString("saved_sort_mode", currentSort).apply()
                 filterSongs(searchBar.text.toString())
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -72,6 +86,7 @@ class LibraryFragment : Fragment() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
+        MusicPlayerManager.addListener(playerListener)
         checkPermissionAndLoad()
         return view
     }
@@ -164,5 +179,10 @@ class LibraryFragment : Fragment() {
                     .selectedItemId = R.id.nav_player
             }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        MusicPlayerManager.removeListener(playerListener)
     }
 }
