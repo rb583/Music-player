@@ -1,6 +1,11 @@
 # 🎵 Offline Music Player
 
+[![Download APK](https://img.shields.io/badge/Download-APK%20v1.0-00E5FF?style=for-the-badge&logo=android)](Releases/MusicPlayer-v1.0.apk?raw=true)
+
 An offline music player Android app built natively in **Kotlin**, using **Android Studio**. The app scans and plays music files stored locally on the device — no internet connection required.
+
+### 📥 Direct APK Download
+- 📲 **[Download MusicPlayer-v1.0.apk (13.5 MB)](Releases/MusicPlayer-v1.0.apk?raw=true)**
 
 ## ✨ Features
 
