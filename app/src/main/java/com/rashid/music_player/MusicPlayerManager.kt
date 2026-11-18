@@ -44,7 +44,10 @@ object MusicPlayerManager {
         listeners.toList().forEach { it.invoke() }
     }
 
-    fun playSong(song: Song) {
+    fun playSong(song: Song, contextList: List<Song>? = null) {
+        if (!contextList.isNullOrEmpty()) {
+            songList = contextList
+        }
         try {
             mediaPlayer?.release()
             mediaPlayer = MediaPlayer().apply {
@@ -115,6 +118,8 @@ object MusicPlayerManager {
                     randomIndex = list.indices.random()
                 } while (randomIndex == index)
                 playSong(list[randomIndex])
+            } else {
+                playSong(list[0])
             }
             return
         }
@@ -146,6 +151,8 @@ object MusicPlayerManager {
                     randomIndex = list.indices.random()
                 } while (randomIndex == index)
                 playSong(list[randomIndex])
+            } else {
+                playSong(list[0])
             }
             return
         }
@@ -154,6 +161,8 @@ object MusicPlayerManager {
             playSong(list[index - 1])
         } else if (repeatMode == REPEAT_ALL && list.isNotEmpty()) {
             playSong(list.last())
+        } else if (index == 0) {
+            playSong(list[0])
         }
     }
 
@@ -181,16 +190,21 @@ object MusicPlayerManager {
                 playSong(songList[0])
                 return
             }
+            return
         }
 
-        mediaPlayer?.let {
-            if (it.isPlaying) {
-                it.pause()
-                isPlaying = false
-            } else {
-                it.start()
-                isPlaying = true
+        try {
+            mediaPlayer?.let { player ->
+                if (player.isPlaying) {
+                    player.pause()
+                    isPlaying = false
+                } else {
+                    player.start()
+                    isPlaying = true
+                }
             }
+        } catch (e: Exception) {
+            currentSong?.let { playSong(it) }
         }
         notifyListeners()
     }

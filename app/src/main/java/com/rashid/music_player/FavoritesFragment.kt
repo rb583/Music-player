@@ -35,7 +35,7 @@ class FavoritesFragment : Fragment() {
             emptyText.visibility = View.GONE
             recyclerView.visibility = View.VISIBLE
             recyclerView.adapter = SongAdapter(favoriteSongs) { song ->
-                MusicPlayerManager.playSong(song)
+                MusicPlayerManager.playSong(song, favoriteSongs)
                 requireActivity().findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottom_nav)
                     .selectedItemId = R.id.nav_player
             }

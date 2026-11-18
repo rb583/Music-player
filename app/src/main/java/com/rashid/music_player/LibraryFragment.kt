@@ -191,7 +191,7 @@ class LibraryFragment : Fragment() {
             emptyText.visibility = View.GONE
             recyclerView.visibility = View.VISIBLE
             recyclerView.adapter = SongAdapter(list) { song ->
-                MusicPlayerManager.playSong(song)
+                MusicPlayerManager.playSong(song, list)
                 requireActivity().findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottom_nav)
                     .selectedItemId = R.id.nav_player
             }
