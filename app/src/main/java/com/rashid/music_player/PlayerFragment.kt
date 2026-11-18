@@ -28,6 +28,10 @@ class PlayerFragment : Fragment() {
     private lateinit var sleepTimerBtn: ImageButton
     private val handler = Handler(Looper.getMainLooper())
 
+    private val playerListener: () -> Unit = {
+        updateUI()
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -49,27 +53,22 @@ class PlayerFragment : Fragment() {
 
         playPauseBtn.setOnClickListener {
             MusicPlayerManager.togglePlayPause()
-            updateUI()
         }
 
         view.findViewById<ImageButton>(R.id.btn_next).setOnClickListener {
             MusicPlayerManager.playNext()
-            updateUI()
         }
 
         view.findViewById<ImageButton>(R.id.btn_prev).setOnClickListener {
             MusicPlayerManager.playPrevious()
-            updateUI()
         }
 
         shuffleBtn.setOnClickListener {
             MusicPlayerManager.toggleShuffle()
-            updateUI()
         }
 
         repeatBtn.setOnClickListener {
             MusicPlayerManager.cycleRepeatMode()
-            updateUI()
         }
 
         sleepTimerBtn.setOnClickListener {
@@ -84,6 +83,7 @@ class PlayerFragment : Fragment() {
             override fun onStopTrackingTouch(sb: SeekBar?) {}
         })
 
+        MusicPlayerManager.addListener(playerListener)
         startSeekBarUpdates()
         return view
     }
@@ -168,6 +168,7 @@ class PlayerFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        MusicPlayerManager.removeListener(playerListener)
         handler.removeCallbacksAndMessages(null)
     }
 }

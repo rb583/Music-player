@@ -31,7 +31,9 @@ object MusicPlayerManager {
     var sleepTimerEndTime: Long = 0L
 
     fun addListener(listener: () -> Unit) {
-        listeners.add(listener)
+        if (!listeners.contains(listener)) {
+            listeners.add(listener)
+        }
     }
 
     fun removeListener(listener: () -> Unit) {
@@ -39,26 +41,30 @@ object MusicPlayerManager {
     }
 
     private fun notifyListeners() {
-        listeners.forEach { it.invoke() }
+        listeners.toList().forEach { it.invoke() }
     }
 
     fun playSong(song: Song) {
-        mediaPlayer?.release()
-        mediaPlayer = MediaPlayer().apply {
-            setDataSource(song.path)
-            prepare()
-            start()
-            setOnCompletionListener { handleCompletion() }
+        try {
+            mediaPlayer?.release()
+            mediaPlayer = MediaPlayer().apply {
+                setDataSource(song.path)
+                prepare()
+                start()
+                setOnCompletionListener { handleCompletion() }
+            }
+            EqualizerManager.init(mediaPlayer!!.audioSessionId)
+            currentSong = song
+            isPlaying = true
+            recordPlay(song, mediaPlayer!!.duration.toLong())
+            notifyListeners()
+            startServiceIfNeeded()
+        } catch (e: Exception) {
+            isPlaying = false
+            notifyListeners()
         }
-        EqualizerManager.init(mediaPlayer!!.audioSessionId)
-        currentSong = song
-        isPlaying = true
-        recordPlay(song, mediaPlayer!!.duration.toLong())
-        notifyListeners()
-        startServiceIfNeeded()
     }
 
-    // Inahifadhi kila wimbo unapoanza kuchezwa kwenye Room database
     private fun recordPlay(song: Song, durationMs: Long) {
         val ctx = appContext ?: return
         CoroutineScope(Dispatchers.IO).launch {
@@ -73,8 +79,7 @@ object MusicPlayerManager {
                         playedAt = System.currentTimeMillis()
                     )
                 )
-            } catch (e: Exception) {
-                // Tusiruhusu tatizo la database lisimamishe muziki
+            } catch (_: Exception) {
             }
         }
     }
@@ -95,8 +100,13 @@ object MusicPlayerManager {
 
     fun playNext() {
         val list = songList
-        val current = currentSong ?: return
-        val index = list.indexOf(current)
+        if (list.isEmpty()) return
+        val current = currentSong ?: run {
+            playSong(list[0])
+            return
+        }
+
+        val index = list.indexOfFirst { it.id == current.id }
 
         if (isShuffle) {
             if (list.size > 1) {
@@ -121,10 +131,29 @@ object MusicPlayerManager {
 
     fun playPrevious() {
         val list = songList
-        val current = currentSong ?: return
-        val index = list.indexOf(current)
+        if (list.isEmpty()) return
+        val current = currentSong ?: run {
+            playSong(list[0])
+            return
+        }
+
+        val index = list.indexOfFirst { it.id == current.id }
+
+        if (isShuffle) {
+            if (list.size > 1) {
+                var randomIndex: Int
+                do {
+                    randomIndex = list.indices.random()
+                } while (randomIndex == index)
+                playSong(list[randomIndex])
+            }
+            return
+        }
+
         if (index > 0) {
             playSong(list[index - 1])
+        } else if (repeatMode == REPEAT_ALL && list.isNotEmpty()) {
+            playSong(list.last())
         }
     }
 
@@ -143,6 +172,17 @@ object MusicPlayerManager {
     }
 
     fun togglePlayPause() {
+        if (mediaPlayer == null) {
+            currentSong?.let {
+                playSong(it)
+                return
+            }
+            if (songList.isNotEmpty()) {
+                playSong(songList[0])
+                return
+            }
+        }
+
         mediaPlayer?.let {
             if (it.isPlaying) {
                 it.pause()
