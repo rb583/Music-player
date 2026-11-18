@@ -13,8 +13,13 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
 
-    private val notificationPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    private val permissionsLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { _ ->
+            val fragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+            if (fragment is LibraryFragment) {
+                fragment.checkPermissionAndLoad()
+            }
+        }
 
     private lateinit var miniPlayer: android.widget.LinearLayout
     private lateinit var miniTitle: TextView
@@ -29,9 +34,15 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         MusicPlayerManager.appContext = applicationContext
 
+        // Request storage & notification permissions immediately on app launch
+        val permissionsToRequest = mutableListOf<String>()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            permissionsToRequest.add(Manifest.permission.READ_MEDIA_AUDIO)
+            permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
         }
+        permissionsLauncher.launch(permissionsToRequest.toTypedArray())
 
         setContentView(R.layout.activity_main)
 

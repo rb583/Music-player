@@ -11,16 +11,19 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import android.widget.EditText
-import android.widget.Spinner
+import android.widget.ImageButton
+import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class LibraryFragment : Fragment() {
 
@@ -28,7 +31,7 @@ class LibraryFragment : Fragment() {
     private lateinit var emptyText: TextView
     private lateinit var countHeader: TextView
     private lateinit var searchBar: EditText
-    private lateinit var sortSpinner: Spinner
+    private lateinit var sortMenuBtn: ImageButton
     private var currentSort = "Title (A-Z)"
 
     private var allSongs: List<Song> = emptyList()
@@ -50,7 +53,7 @@ class LibraryFragment : Fragment() {
         emptyText = view.findViewById(R.id.empty_text)
         countHeader = view.findViewById(R.id.song_count_header)
         searchBar = view.findViewById(R.id.search_bar)
-        sortSpinner = view.findViewById(R.id.sort_spinner)
+        sortMenuBtn = view.findViewById(R.id.btn_sort_menu)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         // Load saved sort preference
@@ -64,18 +67,22 @@ class LibraryFragment : Fragment() {
             "Date Added (Newest)",
             "Date Added (Oldest)"
         )
-        sortSpinner.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, sortOptions)
 
-        val initialPosition = sortOptions.indexOf(currentSort).coerceAtLeast(0)
-        sortSpinner.setSelection(initialPosition)
-
-        sortSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                currentSort = sortOptions[position]
+        sortMenuBtn.setOnClickListener {
+            val popupMenu = PopupMenu(requireContext(), sortMenuBtn)
+            sortOptions.forEachIndexed { index, option ->
+                popupMenu.menu.add(0, index, index, option).apply {
+                    isChecked = (option == currentSort)
+                }
+            }
+            popupMenu.menu.setGroupCheckable(0, true, true)
+            popupMenu.setOnMenuItemClickListener { menuItem ->
+                currentSort = sortOptions[menuItem.itemId]
                 prefs.edit().putString("saved_sort_mode", currentSort).apply()
                 filterSongs(searchBar.text.toString())
+                true
             }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
+            popupMenu.show()
         }
 
         searchBar.addTextChangedListener(object : TextWatcher {
@@ -91,13 +98,14 @@ class LibraryFragment : Fragment() {
         return view
     }
 
-    private fun checkPermissionAndLoad() {
+    fun checkPermissionAndLoad() {
+        val context = context ?: return
         val permission = if (Build.VERSION.SDK_INT >= 33)
             Manifest.permission.READ_MEDIA_AUDIO
         else
             Manifest.permission.READ_EXTERNAL_STORAGE
 
-        if (ContextCompat.checkSelfPermission(requireContext(), permission)
+        if (ContextCompat.checkSelfPermission(context, permission)
             == PackageManager.PERMISSION_GRANTED
         ) {
             loadSongs()
@@ -107,40 +115,49 @@ class LibraryFragment : Fragment() {
     }
 
     private fun loadSongs() {
-        val songList = mutableListOf<Song>()
-        val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-        val projection = arrayOf(
-            MediaStore.Audio.Media._ID,
-            MediaStore.Audio.Media.TITLE,
-            MediaStore.Audio.Media.ARTIST,
-            MediaStore.Audio.Media.DATA,
-            MediaStore.Audio.Media.DATE_ADDED
-        )
-        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
+        val ctx = context?.applicationContext ?: return
+        lifecycleScope.launch(Dispatchers.IO) {
+            val songList = mutableListOf<Song>()
+            val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+            val projection = arrayOf(
+                MediaStore.Audio.Media._ID,
+                MediaStore.Audio.Media.TITLE,
+                MediaStore.Audio.Media.ARTIST,
+                MediaStore.Audio.Media.DATA,
+                MediaStore.Audio.Media.DATE_ADDED
+            )
+            val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
 
-        requireContext().contentResolver.query(uri, projection, selection, null, null)?.use { cursor ->
-            val idCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
-            val titleCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
-            val artistCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
-            val pathCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
-            val dateAddedCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED)
+            try {
+                ctx.contentResolver.query(uri, projection, selection, null, null)?.use { cursor ->
+                    val idCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
+                    val titleCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
+                    val artistCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
+                    val pathCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
+                    val dateAddedCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED)
 
-            while (cursor.moveToNext()) {
-                songList.add(
-                    Song(
-                        cursor.getLong(idCol),
-                        cursor.getString(titleCol),
-                        cursor.getString(artistCol),
-                        cursor.getString(pathCol),
-                        cursor.getLong(dateAddedCol)
-                    )
-                )
+                    while (cursor.moveToNext()) {
+                        songList.add(
+                            Song(
+                                cursor.getLong(idCol),
+                                cursor.getString(titleCol),
+                                cursor.getString(artistCol),
+                                cursor.getString(pathCol),
+                                cursor.getLong(dateAddedCol)
+                            )
+                        )
+                    }
+                }
+            } catch (_: Exception) {
+            }
+
+            withContext(Dispatchers.Main) {
+                if (!isAdded) return@withContext
+                allSongs = songList
+                MusicPlayerManager.songList = songList
+                filterSongs(searchBar.text.toString())
             }
         }
-
-        allSongs = songList
-        MusicPlayerManager.songList = songList
-        filterSongs(searchBar.text.toString())
     }
 
     private fun filterSongs(query: String) {

@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -8,12 +9,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
-        android:background="#121212" />
+        android:background="#0F172A" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#99000000" />
+        android:background="#B30B132B" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -22,51 +23,56 @@
         android:gravity="center"
         android:padding="24dp">
 
-        <com.google.android.material.card.MaterialCardView
+        <!-- Boomplay Circular Vinyl Turntable Album Art -->
+        <androidx.cardview.widget.CardView
             android:layout_width="260dp"
             android:layout_height="260dp"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="12dp">
+            app:cardCornerRadius="130dp"
+            app:cardElevation="16dp"
+            app:cardBackgroundColor="#1E293B">
 
             <ImageView
                 android:id="@+id/player_album_art"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
-                android:src="@android:drawable/ic_menu_agenda" />
+                android:src="@android:drawable/ic_menu_agenda"
+                android:contentDescription="@null" />
 
-        </com.google.android.material.card.MaterialCardView>
+        </androidx.cardview.widget.CardView>
 
         <TextView
             android:id="@+id/now_playing_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="28dp"
             android:gravity="center"
             android:singleLine="true"
             android:ellipsize="end"
             android:text="No song playing"
             android:textColor="#FFFFFF"
-            android:textSize="20sp"
+            android:textSize="22sp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/now_playing_artist"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="6dp"
             android:gravity="center"
             android:singleLine="true"
             android:ellipsize="end"
             android:text=""
-            android:textColor="#B3FFFFFF"
-            android:textSize="14sp" />
+            android:textColor="#94A3B8"
+            android:textSize="15sp" />
 
         <SeekBar
             android:id="@+id/seek_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp" />
+            android:layout_marginTop="24dp"
+            android:progressTint="#00E5FF"
+            android:thumbTint="#00E5FF" />
 
         <TextView
             android:id="@+id/time_text"
@@ -74,76 +80,85 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:text="0:00 / 0:00"
-            android:textColor="#B3FFFFFF"
-            android:textSize="12sp" />
+            android:textColor="#94A3B8"
+            android:textSize="13sp" />
 
+        <!-- Playback Controls -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center"
-            android:layout_marginTop="16dp">
+            android:layout_marginTop="20dp">
 
             <ImageButton
                 android:id="@+id/btn_prev"
                 android:layout_width="56dp"
                 android:layout_height="56dp"
                 android:src="@android:drawable/ic_media_previous"
-                android:tint="#FFFFFF"
+                app:tint="#FFFFFF"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:layout_marginEnd="16dp" />
+                android:layout_marginEnd="20dp"
+                android:contentDescription="@null" />
 
+            <!-- Boomplay Circular Gradient Play/Pause Button -->
             <ImageButton
                 android:id="@+id/btn_play_pause"
-                android:layout_width="72dp"
-                android:layout_height="72dp"
+                android:layout_width="68dp"
+                android:layout_height="68dp"
                 android:src="@android:drawable/ic_media_play"
-                android:tint="#FFFFFF"
-                android:background="?attr/selectableItemBackgroundBorderless" />
+                app:tint="#FFFFFF"
+                android:background="@drawable/bg_play_pause"
+                android:contentDescription="@null" />
 
             <ImageButton
                 android:id="@+id/btn_next"
                 android:layout_width="56dp"
                 android:layout_height="56dp"
                 android:src="@android:drawable/ic_media_next"
-                android:tint="#FFFFFF"
+                app:tint="#FFFFFF"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:layout_marginStart="16dp" />
+                android:layout_marginStart="20dp"
+                android:contentDescription="@null" />
 
         </LinearLayout>
 
+        <!-- Shuffle, Repeat, Sleep Timer Bar -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center"
-            android:layout_marginTop="16dp">
+            android:layout_marginTop="20dp">
 
             <ImageButton
                 android:id="@+id/btn_shuffle"
                 android:layout_width="44dp"
                 android:layout_height="44dp"
                 android:src="@android:drawable/ic_menu_rotate"
-                android:tint="#FFFFFF"
+                app:tint="#FFFFFF"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:layout_marginEnd="24dp" />
+                android:layout_marginEnd="24dp"
+                android:contentDescription="@null" />
 
             <ImageButton
                 android:id="@+id/btn_repeat"
                 android:layout_width="44dp"
                 android:layout_height="44dp"
                 android:src="@android:drawable/ic_menu_revert"
-                android:tint="#FFFFFF"
+                app:tint="#FFFFFF"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:layout_marginEnd="24dp" />
+                android:layout_marginEnd="24dp"
+                android:contentDescription="@null" />
 
             <ImageButton
                 android:id="@+id/btn_sleep_timer"
                 android:layout_width="44dp"
                 android:layout_height="44dp"
                 android:src="@android:drawable/ic_lock_idle_alarm"
-                android:tint="#FFFFFF"
-                android:background="?attr/selectableItemBackgroundBorderless" />
+                app:tint="#FFFFFF"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@null" />
 
         </LinearLayout>
 
@@ -153,8 +168,9 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text=""
-            android:textColor="#B3FFFFFF"
-            android:textSize="12sp" />
+            android:textColor="#00E5FF"
+            android:textSize="13sp"
+            android:textStyle="bold" />
 
     </LinearLayout>
 
