@@ -3,6 +3,7 @@ package com.rashid.music_player
 import android.content.Context
 import android.content.Intent
 import android.media.MediaPlayer
+import android.provider.MediaStore
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -101,15 +102,62 @@ object MusicPlayerManager {
         }
     }
 
+    private fun getActiveSongList(): List<Song> {
+        return if (songList.isNotEmpty()) songList else loadFallbackSongs()
+    }
+
+    private fun loadFallbackSongs(): List<Song> {
+        val ctx = appContext ?: return emptyList()
+        val list = mutableListOf<Song>()
+        val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+        val projection = arrayOf(
+            MediaStore.Audio.Media._ID,
+            MediaStore.Audio.Media.TITLE,
+            MediaStore.Audio.Media.ARTIST,
+            MediaStore.Audio.Media.DATA,
+            MediaStore.Audio.Media.DATE_ADDED
+        )
+        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
+
+        try {
+            ctx.contentResolver.query(uri, projection, selection, null, null)?.use { cursor ->
+                val idCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
+                val titleCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
+                val artistCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
+                val pathCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
+                val dateAddedCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED)
+
+                while (cursor.moveToNext()) {
+                    list.add(
+                        Song(
+                            cursor.getLong(idCol),
+                            cursor.getString(titleCol),
+                            cursor.getString(artistCol),
+                            cursor.getString(pathCol),
+                            cursor.getLong(dateAddedCol)
+                        )
+                    )
+                }
+            }
+        } catch (_: Exception) {
+        }
+        if (list.isNotEmpty()) {
+            this.songList = list
+        }
+        return list
+    }
+
     fun playNext() {
-        val list = songList
+        val list = getActiveSongList()
         if (list.isEmpty()) return
+
         val current = currentSong ?: run {
             playSong(list[0])
             return
         }
 
-        val index = list.indexOfFirst { it.id == current.id }
+        var index = list.indexOfFirst { it.id == current.id }
+        if (index == -1) index = 0
 
         if (isShuffle) {
             if (list.size > 1) {
@@ -124,25 +172,21 @@ object MusicPlayerManager {
             return
         }
 
-        if (index != -1 && index + 1 < list.size) {
-            playSong(list[index + 1])
-        } else if (repeatMode == REPEAT_ALL && list.isNotEmpty()) {
-            playSong(list[0])
-        } else {
-            isPlaying = false
-            notifyListeners()
-        }
+        val nextIndex = (index + 1) % list.size
+        playSong(list[nextIndex])
     }
 
     fun playPrevious() {
-        val list = songList
+        val list = getActiveSongList()
         if (list.isEmpty()) return
+
         val current = currentSong ?: run {
             playSong(list[0])
             return
         }
 
-        val index = list.indexOfFirst { it.id == current.id }
+        var index = list.indexOfFirst { it.id == current.id }
+        if (index == -1) index = 0
 
         if (isShuffle) {
             if (list.size > 1) {
@@ -157,13 +201,8 @@ object MusicPlayerManager {
             return
         }
 
-        if (index > 0) {
-            playSong(list[index - 1])
-        } else if (repeatMode == REPEAT_ALL && list.isNotEmpty()) {
-            playSong(list.last())
-        } else if (index == 0) {
-            playSong(list[0])
-        }
+        val prevIndex = if (index > 0) index - 1 else list.size - 1
+        playSong(list[prevIndex])
     }
 
     fun toggleShuffle() {
@@ -181,30 +220,24 @@ object MusicPlayerManager {
     }
 
     fun togglePlayPause() {
-        if (mediaPlayer == null) {
-            currentSong?.let {
-                playSong(it)
-                return
-            }
-            if (songList.isNotEmpty()) {
-                playSong(songList[0])
-                return
-            }
+        val player = mediaPlayer
+        if (player == null) {
+            val songToPlay = currentSong ?: getActiveSongList().firstOrNull()
+            songToPlay?.let { playSong(it) }
             return
         }
 
         try {
-            mediaPlayer?.let { player ->
-                if (player.isPlaying) {
-                    player.pause()
-                    isPlaying = false
-                } else {
-                    player.start()
-                    isPlaying = true
-                }
+            if (player.isPlaying) {
+                player.pause()
+                isPlaying = false
+            } else {
+                player.start()
+                isPlaying = true
             }
         } catch (e: Exception) {
-            currentSong?.let { playSong(it) }
+            val songToPlay = currentSong ?: getActiveSongList().firstOrNull()
+            songToPlay?.let { playSong(it) }
         }
         notifyListeners()
     }

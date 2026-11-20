@@ -152,13 +152,12 @@ class PlayerFragment : Fragment() {
     private fun startSeekBarUpdates() {
         handler.post(object : Runnable {
             override fun run() {
-                MusicPlayerManager.mediaPlayer?.let {
-                    seekBar.progress = it.currentPosition
-                    timeText.text = "${formatTime(it.currentPosition)} / ${formatTime(it.duration)}"
-
-                    if (!it.isPlaying && MusicPlayerManager.isPlaying) {
-                        MusicPlayerManager.isPlaying = false
-                        playPauseBtn.setImageResource(android.R.drawable.ic_media_play)
+                val player = MusicPlayerManager.mediaPlayer
+                if (player != null && MusicPlayerManager.currentSong != null) {
+                    try {
+                        seekBar.progress = player.currentPosition
+                        timeText.text = "${formatTime(player.currentPosition)} / ${formatTime(player.duration)}"
+                    } catch (_: Exception) {
                     }
                 }
                 handler.postDelayed(this, 500)
