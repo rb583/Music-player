@@ -98,7 +98,7 @@ object MusicPlayerManager {
     private fun handleCompletion() {
         when (repeatMode) {
             REPEAT_ONE -> currentSong?.let { playSong(it) }
-            else -> playNext()
+            else -> playNext(isUserAction = false)
         }
     }
 
@@ -147,7 +147,7 @@ object MusicPlayerManager {
         return list
     }
 
-    fun playNext() {
+    fun playNext(isUserAction: Boolean = true) {
         val list = getActiveSongList()
         if (list.isEmpty()) return
 
@@ -172,8 +172,16 @@ object MusicPlayerManager {
             return
         }
 
-        val nextIndex = (index + 1) % list.size
-        playSong(list[nextIndex])
+        if (index + 1 < list.size) {
+            playSong(list[index + 1])
+        } else {
+            if (repeatMode == REPEAT_ALL || isUserAction) {
+                playSong(list[0])
+            } else {
+                isPlaying = false
+                notifyListeners()
+            }
+        }
     }
 
     fun playPrevious() {

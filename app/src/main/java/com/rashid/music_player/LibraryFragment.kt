@@ -178,6 +178,7 @@ class LibraryFragment : Fragment() {
             else -> filtered.sortedBy { it.title.lowercase() }
         }
 
+        MusicPlayerManager.songList = filtered
         displaySongs(filtered)
     }
 
